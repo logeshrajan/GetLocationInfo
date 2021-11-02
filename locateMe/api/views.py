@@ -34,7 +34,7 @@ class GetLocationAPIView(APIView):
             return Response(response, status=404)
   
         current_date = dt.datetime.now().replace(tzinfo=utc)
-        existing_place = LocationDetails.objects.filter(lat=lat,lon=lon).last()
+        existing_place = LocationDetails.objects.filter(lat=lat,lon=lon).first()
         
         if existing_place is None: #for non existing place
             
@@ -46,10 +46,9 @@ class GetLocationAPIView(APIView):
             difference = round((current_date - existing_place.date).total_seconds()) * 0.000277778
             if difference > 24:
                 response_dict["name"]= location_info(lat,lon)
+                LocationDetails.objects.filter(lat=lat,lon=lon).update(date=current_date)
             else:
+                print("Fetching from DB cache")
                 response_dict["name"] = existing_place.name 
 
         return Response(response_dict,status=status.HTTP_200_OK)
-# utc=pytz.UTC
-# current_date = dt.datetime.now().replace(tzinfo=utc)
-# print(current_date)
